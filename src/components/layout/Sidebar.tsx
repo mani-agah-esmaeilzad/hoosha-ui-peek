@@ -12,9 +12,9 @@ import {
   Music, 
   Settings,
   ChevronDown,
-  ChevronLeft,
   Plus,
-  History
+  History,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -26,6 +26,11 @@ interface SidebarItem {
   icon: any;
   href?: string;
   items?: SidebarItem[];
+}
+
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 const sidebarData: SidebarItem[] = [
@@ -75,7 +80,7 @@ const sidebarData: SidebarItem[] = [
   }
 ];
 
-export const Sidebar = () => {
+export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   const [openGroups, setOpenGroups] = useState<string[]>([]);
 
   const toggleGroup = (title: string) => {
@@ -87,74 +92,97 @@ export const Sidebar = () => {
   };
 
   return (
-    <div className="w-80 border-l bg-hoosha-light-gray/50 h-full">
-      <div className="p-4 border-b">
-        <Button className="w-full justify-start bg-hoosha-orange hover:bg-hoosha-orange-hover text-white">
-          <Plus className="h-4 w-4 ml-2" />
-          گفتگوی جدید
-        </Button>
-      </div>
-
-      <ScrollArea className="flex-1 h-[calc(100vh-140px)]">
-        <div className="p-4 space-y-2">
-          {/* History Section */}
-          <div className="mb-6">
-            <div className="flex items-center text-sm text-muted-foreground mb-2">
-              <History className="h-4 w-4 ml-2" />
-              تاریخچه
-            </div>
-            <div className="text-sm text-muted-foreground py-4 text-center">
-              خالی است.!
-            </div>
-          </div>
-
-          {/* Main Navigation */}
-          {sidebarData.map((group) => (
-            <Collapsible 
-              key={group.title}
-              open={openGroups.includes(group.title)}
-              onOpenChange={() => toggleGroup(group.title)}
-            >
-              <CollapsibleTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-between hover:bg-muted/50 h-auto py-3"
-                >
-                  <div className="flex items-center">
-                    <group.icon className="h-4 w-4 ml-2" />
-                    <span className="text-sm font-medium">{group.title}</span>
-                  </div>
-                  <ChevronDown className={cn(
-                    "h-4 w-4 transition-transform",
-                    openGroups.includes(group.title) && "rotate-180"
-                  )} />
-                </Button>
-              </CollapsibleTrigger>
-              
-              <CollapsibleContent className="space-y-1 mt-1">
-                {group.items?.map((item) => (
-                  <Button
-                    key={item.title}
-                    variant="ghost"
-                    className="w-full justify-start hover:bg-muted/50 h-auto py-2 pr-8"
-                  >
-                    <item.icon className="h-3 w-3 ml-2" />
-                    <span className="text-xs">{item.title}</span>
-                  </Button>
-                ))}
-              </CollapsibleContent>
-            </Collapsible>
-          ))}
-
-          {/* Settings at Bottom */}
-          <div className="mt-8 pt-4 border-t">
-            <Button variant="ghost" className="w-full justify-start hover:bg-muted/50">
-              <Settings className="h-4 w-4 ml-2" />
-              <span className="text-sm">تنظیمات</span>
-            </Button>
-          </div>
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={onClose}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <div className={cn(
+        "fixed top-0 right-0 h-full w-80 bg-background border-l z-50 transform transition-transform duration-300 ease-in-out md:relative md:transform-none md:z-auto",
+        isOpen ? "translate-x-0" : "translate-x-full md:translate-x-0",
+        "md:w-80"
+      )}>
+        {/* Mobile Close Button */}
+        <div className="flex items-center justify-between p-4 border-b md:hidden">
+          <div className="text-lg font-bold text-hoosha-orange">منو</div>
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
+            <X className="h-4 w-4" />
+          </Button>
         </div>
-      </ScrollArea>
-    </div>
+
+        <div className="p-4 border-b hidden md:block">
+          <Button className="w-full justify-start bg-hoosha-orange hover:bg-hoosha-orange-hover text-white">
+            <Plus className="h-4 w-4 ml-2" />
+            گفتگوی جدید
+          </Button>
+        </div>
+
+        <ScrollArea className="flex-1 h-[calc(100vh-140px)]">
+          <div className="p-4 space-y-2">
+            {/* History Section */}
+            <div className="mb-6">
+              <div className="flex items-center text-sm text-muted-foreground mb-2">
+                <History className="h-4 w-4 ml-2" />
+                تاریخچه
+              </div>
+              <div className="text-sm text-muted-foreground py-4 text-center">
+                خالی است.!
+              </div>
+            </div>
+
+            {/* Main Navigation */}
+            {sidebarData.map((group) => (
+              <Collapsible 
+                key={group.title}
+                open={openGroups.includes(group.title)}
+                onOpenChange={() => toggleGroup(group.title)}
+              >
+                <CollapsibleTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-between hover:bg-muted/50 h-auto py-3"
+                  >
+                    <div className="flex items-center">
+                      <group.icon className="h-4 w-4 ml-2 flex-shrink-0" />
+                      <span className="text-sm font-medium truncate">{group.title}</span>
+                    </div>
+                    <ChevronDown className={cn(
+                      "h-4 w-4 transition-transform flex-shrink-0",
+                      openGroups.includes(group.title) && "rotate-180"
+                    )} />
+                  </Button>
+                </CollapsibleTrigger>
+                
+                <CollapsibleContent className="space-y-1 mt-1">
+                  {group.items?.map((item) => (
+                    <Button
+                      key={item.title}
+                      variant="ghost"
+                      className="w-full justify-start hover:bg-muted/50 h-auto py-2 pr-8"
+                    >
+                      <item.icon className="h-3 w-3 ml-2 flex-shrink-0" />
+                      <span className="text-xs truncate">{item.title}</span>
+                    </Button>
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
+            ))}
+
+            {/* Settings at Bottom */}
+            <div className="mt-8 pt-4 border-t">
+              <Button variant="ghost" className="w-full justify-start hover:bg-muted/50">
+                <Settings className="h-4 w-4 ml-2" />
+                <span className="text-sm">تنظیمات</span>
+              </Button>
+            </div>
+          </div>
+        </ScrollArea>
+      </div>
+    </>
   );
 };

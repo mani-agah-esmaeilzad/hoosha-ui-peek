@@ -65,22 +65,22 @@ export const ChatArea = () => {
             </p>
 
             {/* Quick Action Buttons */}
-            <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto">
-              <Button variant="outline" className="h-12 text-xs flex items-center space-x-2 space-x-reverse">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-sm mx-auto px-4">
+              <Button variant="outline" className="h-12 text-xs flex items-center space-x-2 space-x-reverse justify-center">
                 <FileText className="h-4 w-4" />
                 <span>تحلیل بازار فایل</span>
               </Button>
-              <Button variant="outline" className="h-12 text-xs flex items-center space-x-2 space-x-reverse">
+              <Button variant="outline" className="h-12 text-xs flex items-center space-x-2 space-x-reverse justify-center">
                 <DollarSign className="h-4 w-4" />
                 <span>ایده پیش‌فروش ماهه</span>
               </Button>
-              <Button variant="outline" className="h-12 text-xs flex items-center space-x-2 space-x-reverse">
+              <Button variant="outline" className="h-12 text-xs flex items-center space-x-2 space-x-reverse justify-center">
                 <Mic className="h-4 w-4" />
                 <span>من رو شگفت‌انده دکن</span>
               </Button>
-              <Button variant="outline" className="h-12 text-xs flex items-center space-x-2 space-x-reverse">
+              <Button variant="outline" className="h-12 text-xs flex items-center space-x-2 space-x-reverse justify-center">
                 <TrendingUp className="h-4 w-4" />
-                <span></span>
+                <span>تحلیل بازار</span>
               </Button>
             </div>
           </div>
@@ -107,13 +107,19 @@ export const ChatArea = () => {
       {/* Input Area */}
       <div className="border-t bg-background p-4">
         <div className="max-w-4xl mx-auto">
+          {/* Mobile New Chat Button */}
+          <div className="mb-4 md:hidden">
+            <Button className="w-full bg-hoosha-orange hover:bg-hoosha-orange-hover text-white">
+              <span>گفتگوی جدید</span>
+            </Button>
+          </div>
           <div className="relative">
             <Textarea
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="پاسخ به چه موضوعی می‌توانم کمکتان کنم؟"
-              className="min-h-[60px] resize-none pl-24 pr-12 text-right"
+              className="min-h-[60px] resize-none pl-16 md:pl-24 pr-12 text-right text-sm md:text-base"
               dir="rtl"
             />
             
