@@ -19,6 +19,11 @@ export default {
 		},
 		extend: {
 			colors: {
+				'hoosha-orange': 'hsl(var(--hoosha-orange))',
+				'hoosha-orange-hover': 'hsl(var(--hoosha-orange-hover))',
+				'hoosha-gray': 'hsl(var(--hoosha-gray))',
+				'hoosha-dark-gray': 'hsl(var(--hoosha-dark-gray))',
+				'hoosha-light-gray': 'hsl(var(--hoosha-light-gray))',
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',

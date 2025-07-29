@@ -8,6 +8,24 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* Hoosha Design System Colors */
+    --hoosha-orange: 15 100% 60%;
+    --hoosha-orange-hover: 15 100% 55%;
+    --hoosha-gray: 220 5% 95%;
+    --hoosha-dark-gray: 220 10% 20%;
+    --hoosha-light-gray: 220 5% 98%;
+    
+    /* Gradients */
+    --gradient-orange: linear-gradient(135deg, hsl(var(--hoosha-orange)), hsl(var(--hoosha-orange-hover)));
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--hoosha-light-gray)));
+    
+    /* Shadows */
+    --shadow-soft: 0 2px 10px -5px hsl(var(--foreground) / 0.1);
+    --shadow-card: 0 4px 20px -8px hsl(var(--foreground) / 0.15);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.2s ease-out;
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -101,5 +119,30 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Vazir', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    direction: rtl;
+  }
+  
+  /* RTL Support */
+  [dir="rtl"] {
+    text-align: right;
+  }
+  
+  /* Scrollbar Styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
   }
 }
