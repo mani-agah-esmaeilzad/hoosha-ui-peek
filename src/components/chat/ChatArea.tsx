@@ -1,155 +1,158 @@
-import { useState } from "react";
-import { Send, Paperclip, Mic, FileText, DollarSign, TrendingUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
+import { useState, useRef, useEffect } from 'react'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
+import { Send } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface Message {
-  id: string;
-  content: string;
-  sender: 'user' | 'ai';
-  timestamp: Date;
+  id: number
+  text: string
+  isUser: boolean
 }
 
-export const ChatArea = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState("");
+export function ChatArea() {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: 1,
+      text: 'سلام! من یک دستیار هوشمند هستم که به اطلاعات لحظه‌ای بورس ایران دسترسی دارم. چطور می‌توانم کمکتان کنم؟',
+      isUser: false,
+    },
+  ])
+  const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false) // State for loading
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
 
-  const handleSendMessage = () => {
-    if (!inputValue.trim()) return;
+  const handleSendMessage = async () => {
+    if (input.trim() === '' || isLoading) return
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      content: inputValue,
-      sender: 'user',
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, newMessage]);
-    setInputValue("");
-
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        content: "در حال پردازش پاسخ شما...",
-        sender: 'ai',
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, aiResponse]);
-    }, 1000);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+    const userMessage: Message = {
+      id: messages.length + 1,
+      text: input,
+      isUser: true,
     }
-  };
+    setMessages((prev) => [...prev, userMessage])
+    setInput('')
+    setIsLoading(true)
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: input }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok')
+      }
+
+      const data = await response.json()
+
+      const botMessage: Message = {
+        id: messages.length + 2,
+        text: data.response,
+        isUser: false,
+      }
+      setMessages((prev) => [...prev, botMessage])
+    } catch (error) {
+      console.error('Error fetching chat response:', error)
+      const errorMessage: Message = {
+        id: messages.length + 2,
+        text: 'متاسفانه در ارتباط با سرور مشکلی پیش آمد. لطفاً دوباره تلاش کنید.',
+        isUser: false,
+      }
+      setMessages((prev) => [...prev, errorMessage])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTo({
+        top: scrollAreaRef.current.scrollHeight,
+        behavior: 'smooth',
+      })
+    }
+  }, [messages])
 
   return (
-    <div className="flex-1 flex flex-col h-full">
-      {/* Welcome Section */}
-      {messages.length === 0 && (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center max-w-md">
-            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-hoosha-orange to-hoosha-orange-hover flex items-center justify-center">
-              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                <div className="w-4 h-4 bg-hoosha-orange rounded-full"></div>
-              </div>
-            </div>
-            
-            <h1 className="text-3xl font-bold mb-2">هوش مصنوعی فارسی</h1>
-            <p className="text-muted-foreground mb-8">
-              هوشا، ابزارهای هوش مصنوعی فارسی برای تولید محتوا و تحلیل همه در یک‌جا
-            </p>
-
-            {/* Quick Action Buttons */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-sm mx-auto px-4">
-              <Button variant="outline" className="h-12 text-xs flex items-center space-x-2 space-x-reverse justify-center">
-                <FileText className="h-4 w-4" />
-                <span>تحلیل بازار فایل</span>
-              </Button>
-              <Button variant="outline" className="h-12 text-xs flex items-center space-x-2 space-x-reverse justify-center">
-                <DollarSign className="h-4 w-4" />
-                <span>ایده پیش‌فروش ماهه</span>
-              </Button>
-              <Button variant="outline" className="h-12 text-xs flex items-center space-x-2 space-x-reverse justify-center">
-                <Mic className="h-4 w-4" />
-                <span>من رو شگفت‌انده دکن</span>
-              </Button>
-              <Button variant="outline" className="h-12 text-xs flex items-center space-x-2 space-x-reverse justify-center">
-                <TrendingUp className="h-4 w-4" />
-                <span>تحلیل بازار</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Messages Area */}
-      {messages.length > 0 && (
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+    <div className="flex flex-col h-full">
+      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+        <div className="space-y-4">
           {messages.map((message) => (
-            <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <Card className={`max-w-[70%] p-4 ${
-                message.sender === 'user' 
-                  ? 'bg-hoosha-orange text-white' 
-                  : 'bg-muted'
-              }`}>
-                <p className="text-sm">{message.content}</p>
-              </Card>
+            <div
+              key={message.id}
+              className={cn(
+                'flex items-start gap-3',
+                message.isUser ? 'justify-end' : 'justify-start'
+              )}
+            >
+              {!message.isUser && (
+                <Avatar>
+                  <AvatarImage src="/placeholder.svg" alt="Bot" />
+                  <AvatarFallback>H</AvatarFallback>
+                </Avatar>
+              )}
+              <div
+                className={cn(
+                  'max-w-xs md:max-w-md lg:max-w-lg rounded-lg p-3 text-sm',
+                  message.isUser
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted'
+                )}
+              >
+                <p style={{ whiteSpace: 'pre-wrap' }}>{message.text}</p>
+              </div>
+              {message.isUser && (
+                <Avatar>
+                  <AvatarImage src="/placeholder.svg" alt="User" />
+                  <AvatarFallback>U</AvatarFallback>
+                </Avatar>
+              )}
             </div>
           ))}
+          {isLoading && (
+             <div className="flex items-start gap-3 justify-start">
+                <Avatar>
+                  <AvatarImage src="/placeholder.svg" alt="Bot" />
+                  <AvatarFallback>H</AvatarFallback>
+                </Avatar>
+                <div className="bg-muted rounded-lg p-3 text-sm">
+                    <p>در حال نوشتن...</p>
+                </div>
+             </div>
+          )}
         </div>
-      )}
-
-      {/* Input Area */}
-      <div className="border-t bg-background p-4">
-        <div className="max-w-4xl mx-auto">
-          {/* Mobile New Chat Button */}
-          <div className="mb-4 md:hidden">
-            <Button className="w-full bg-hoosha-orange hover:bg-hoosha-orange-hover text-white">
-              <span>گفتگوی جدید</span>
-            </Button>
-          </div>
-          <div className="relative">
-            <Textarea
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="پاسخ به چه موضوعی می‌توانم کمکتان کنم؟"
-              className="min-h-[60px] resize-none pl-16 md:pl-24 pr-12 text-right text-sm md:text-base"
-              dir="rtl"
-            />
-            
-            {/* Attachment Button */}
-            <Button
-              size="icon"
-              variant="ghost"
-              className="absolute right-2 bottom-2 h-8 w-8"
-            >
-              <Paperclip className="h-4 w-4" />
-            </Button>
-
-            {/* Send Button */}
-            <Button
-              onClick={handleSendMessage}
-              size="icon"
-              className="absolute left-2 bottom-2 h-8 w-8 bg-hoosha-orange hover:bg-hoosha-orange-hover"
-              disabled={!inputValue.trim()}
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <div className="flex justify-center mt-2">
-            <p className="text-xs text-muted-foreground">
-              هوش مصنوعی ممکن است اشتباه کند. اطلاعات مهم را بررسی کنید
-            </p>
-          </div>
+      </ScrollArea>
+      <div className="border-t p-4">
+        <div className="relative">
+          <Textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="پیام خود را بنویسید..."
+            className="pr-16"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleSendMessage()
+              }
+            }}
+            disabled={isLoading}
+          />
+          <Button
+            className="absolute top-1/2 -translate-y-1/2 right-3"
+            size="icon"
+            onClick={handleSendMessage}
+            disabled={isLoading}
+          >
+            <Send className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
